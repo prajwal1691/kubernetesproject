@@ -1,0 +1,39 @@
+---
+- name: Install Jenkins on EC2 instances
+  hosts: aws_region_ap_south_1 # Use the group name defined in aws_ec2.yml
+  remote_user: ubuntu
+  become: true
+
+  tasks:
+    - name: Update apt package cache
+      apt:
+        update_cache: yes
+      become: true
+
+    - name: Install Java OpenJDK
+      apt:
+        name: openjdk-11-jdk
+        state: present
+      become: true
+
+    - name: Add Jenkins APT repository
+      apt_repository:
+        repo: deb http://pkg.jenkins.io/debian-stable binary/
+        state: present
+        filename: jenkins
+        update_cache: yes
+        cache_valid_time: 3600
+        key_url: https://pkg.jenkins.io/debian-stable/jenkins.io.key
+
+    - name: Install Jenkins
+      apt:
+        name: jenkins
+        state: present
+      become: true
+
+    - name: Start and enable Jenkins service
+      systemd:
+        name: jenkins
+        enabled: yes
+        state: started
+
